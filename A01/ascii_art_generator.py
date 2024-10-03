@@ -14,7 +14,7 @@ ASCII_CHARS = [
 ]
 
 
-def image_to_ascii(image, new_width=100, edge_detection=False):
+def image_to_ascii(image, new_width=100, edge_method='None'):
     # Resize image while maintaining aspect ratio
     width, height = image.size
     aspect_ratio = height / width
@@ -23,13 +23,26 @@ def image_to_ascii(image, new_width=100, edge_detection=False):
 
     # Convert image to grayscale
     image = image.convert('L')
+    img_cv = np.array(image)
 
-    # Apply edge detection if selected
-    if edge_detection:
-        # Convert PIL image to OpenCV format
-        img_cv = np.array(image)
-        # Apply Canny edge detection
-        edges = cv2.Canny(img_cv, threshold1=100, threshold2=200)
+    # Apply edge detection based on user selection
+    if edge_method != 'None':
+        if edge_method == 'Canny':
+            # Canny edge detection
+            edges = cv2.Canny(img_cv, threshold1=100, threshold2=200)
+        elif edge_method == 'Sobel':
+            # Sobel edge detection
+            sobelx = cv2.Sobel(img_cv, cv2.CV_64F, 1, 0, ksize=3)
+            sobely = cv2.Sobel(img_cv, cv2.CV_64F, 0, 1, ksize=3)
+            edges = cv2.magnitude(sobelx, sobely)
+            edges = np.uint8(edges / np.max(edges) * 255) if np.max(edges) != 0 else np.uint8(edges)
+        elif edge_method == 'Laplacian':
+            # Laplacian edge detection
+            edges = cv2.Laplacian(img_cv, cv2.CV_64F)
+            edges = np.uint8(np.absolute(edges) / np.max(np.absolute(edges)) * 255) if np.max(edges) != 0 else np.uint8(
+                edges)
+        else:
+            edges = img_cv  # No edge detection
         # Invert colors: edges are white on black background
         edges = 255 - edges
         # Convert back to PIL image
@@ -67,7 +80,7 @@ def image_to_ascii(image, new_width=100, edge_detection=False):
 inputs = [
     gr.Image(type='pil', label='Upload Image'),
     gr.Slider(minimum=50, maximum=200, value=100, label='Width'),
-    gr.Checkbox(label='Apply Edge Detection')
+    gr.Radio(choices=['None', 'Canny', 'Sobel', 'Laplacian'], value='None', label='Edge Detection Method')
 ]
 
 outputs = [
@@ -76,7 +89,7 @@ outputs = [
 ]
 
 title = "ASCII Art Generator"
-description = "Upload an image and convert it to ASCII art. Adjust the width and optionally apply edge detection."
+description = "Upload an image and convert it to ASCII art. Adjust the width and choose different edge detection methods."
 
 # Create Gradio Interface
 iface = gr.Interface(
