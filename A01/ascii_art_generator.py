@@ -1,3 +1,5 @@
+# Running on public URL: https://66c3efb91e559845b1.gradio.live
+# Github Repo: https://github.com/zhangzi-TZ/CS5330
 import gradio as gr
 import numpy as np
 from PIL import Image, ImageOps, ImageFont, ImageDraw
