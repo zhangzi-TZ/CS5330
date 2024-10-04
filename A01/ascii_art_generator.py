@@ -176,4 +176,4 @@ with gr.Blocks(title=title) as demo:
         outputs=[full_ascii_code, mse_number, ssim_number, download_file],
     )
 
-demo.launch()
+demo.launch(share=True)
